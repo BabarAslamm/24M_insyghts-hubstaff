@@ -1,0 +1,837 @@
+openapi: 3.0.3
+info:
+  title: Insyghts Hooks
+  description: <b>Login, Attendance Logs, Attendances, Activity Logs, Activity Screenshots</b>
+  version: 1.0.0
+servers:
+- url: http://localhost:8000/
+tags:
+- name: Login
+  description: Login Apis and Token Refresh
+- name: AttendanceLog
+  description: Create attendance logs and attendance.
+- name: LastAttendance
+  description: Last Attendance status of logged-in user
+- name: ActivityLog
+  description: Create, List and Delete activity logs along screenshots
+- name: HubstaffConfig
+  description: Create, List, Update and Delete Hubstaff Configuration
+paths:
+  /login:
+      post:
+        tags:
+        - Login
+        summary: Validate a Login
+        description: User Validation and Access Token Fetch
+        operationId: Login
+        requestBody:
+          description: Enter Require Fields!
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Login'
+          required: true
+        responses:
+          200:
+            description: Success
+            content:
+              application/json:
+                schema:
+                  oneOf:
+                    - $ref: '#/components/schemas/LoginSuccess'
+                    - $ref: '#/components/schemas/LoginFaild'
+          405:
+            description: Method Not Supported
+            content: {}
+  /api/refresh/token:
+      get:
+        tags:
+        - Login
+        summary: Refresh Token
+        description: User Validation and Access Token Fetch
+        operationId: Refresh Token
+        security: 
+          - accessToken: []
+        responses:
+          200:
+            description: Success
+            content:
+              application/json:
+                schema:
+                  oneOf:
+                    - $ref: '#/components/schemas/refreshTokenSuccess'
+                    - $ref: '#/components/schemas/invalidToken'
+          405:
+            description: Method Not Supported
+            content: {}
+  /api/hubstaff/attendance/save:
+    post:
+      tags:
+      - AttendanceLog
+      summary: Save Attendance Logs And Create/Mark Attendance
+      description: Saving Attendance Logs And Mark Attendance base upon the data of Attendance Logs
+      operationId: AttendancLogSaving
+      requestBody:
+        description: Enter Require Fields!
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttendanceLogCreate'
+        required: true
+      security: 
+        - accessToken: []
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceCreateSuccess'
+        500:
+          description: Somthing Went Wrong
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerError'
+      x-codegen-request-body-name: body
+  /api/hubstaff/attendance/last:
+    get:
+      tags:
+      - LastAttendance
+      summary: Retrieve latest attendance status
+      description: Retrieve latest attendance status of currently logged-in user
+      operationId: GetLastAttendance
+      security: 
+        - accessToken: []
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LastAttendance'
+        500:
+          description: Somthing Went Wrong
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerError'
+      x-codegen-request-body-name: body
+  /api/hubstaff/activity-screenshots:
+    post:
+      tags:
+      - ActivityLog
+      summary: Retrieve Logs with screenshots
+      description: Retrieve activity logs along screenshots of those logs
+      operationId: ActivityLogs
+      security: 
+        - accessToken: []
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivityLogsResponse'
+        500:
+          description: Somthing Went Wrong
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerError'
+      x-codegen-request-body-name: body
+  /api/hubstaff/activity-log/save:
+    post:
+      tags:
+      - ActivityLog
+      summary: Save Activity Logs And Activity Screenshots
+      description: Save Activity Logs and Activity Screenshots  
+      operationId: ActivityLogSaving
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActivityLogCreate'
+        required: false
+      security: 
+        - accessToken: []
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        500:
+          description: Somthing Went Wrong
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerError'
+      x-codegen-request-body-name: body
+  /api/hubstaff/activity-log/delete/{id}:
+    delete:
+      tags:
+      - ActivityLog
+      summary: Delete Activity Log
+      description: Delete Activity Log along screenshots data  
+      operationId: ActivityLogDeleting
+      parameters:
+        - name: id
+          in: path
+          description: Configuration ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      security: 
+        - accessToken: []
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        500:
+          description: Somthing Went Wrong
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerError'
+      x-codegen-request-body-name: body
+  /api/hubstaff/config:
+    get:
+      tags:
+      - HubstaffConfig
+      summary: Retrieve hubstaff configurations
+      description: Retrieve the hubstaff settings
+      operationId: HubstaffConfig
+      security: 
+        - accessToken: []
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConfigsResponse'
+        500:
+          description: Somthing Went Wrong
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerError'
+      x-codegen-request-body-name: body
+  /api/hubstaff/config/store:
+    post:
+      tags:
+      - HubstaffConfig
+      summary: Save Hubstaff Configuration
+      description: Save Hubstaff Configuration  
+      operationId: HubstaffConfigSaving
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HubstaffConfigCreate'
+        required: false
+      security: 
+        - accessToken: []
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConfigCreateSuccess'
+        500:
+          description: Somthing Went Wrong
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerError'
+      x-codegen-request-body-name: body
+  /api/hubstaff/config/update/{id}:
+    put:
+      tags:
+      - HubstaffConfig
+      summary: Update Hubstaff Configuration
+      description: Save Hubstaff Configuration  
+      operationId: HubstaffConfigUpdating
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HubstaffConfigUpdate'
+        required: false
+      parameters:
+        - name: id
+          in: path
+          description: Configuration ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      security: 
+        - accessToken: []
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConfigCreateSuccess'
+        500:
+          description: Somthing Went Wrong
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerError'
+      x-codegen-request-body-name: body
+  /api/hubstaff/config/delete/{id}:
+    delete:
+      tags:
+      - HubstaffConfig
+      summary: Delete Hubstaff Configuration
+      description: Delete Hubstaff Configuration  
+      operationId: HubstaffConfigDeleting
+      parameters:
+        - name: id
+          in: path
+          description: Configuration ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      security: 
+        - accessToken: []
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        500:
+          description: Somthing Went Wrong
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerError'
+      x-codegen-request-body-name: body
+  /api/hubstaff/server/timestamps:
+    get:
+      tags:
+      - ServerTimestamp
+      summary: Retrieve timestamps of server
+      description: Retrieve timestamps of server
+      operationId: ServerTimestamp
+      security: 
+        - accessToken: []
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Timestamps'
+        500:
+          description: Somthing Went Wrong
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerError'
+      x-codegen-request-body-name: body
+components:
+  securitySchemes:
+    accessToken:
+      type: apiKey
+      in: header
+      name: token
+      description : User Access Token
+  schemas:
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+    ServerError:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: Something Went Wrong!
+    Login:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+    LoginSuccess: 
+      type: object
+      properties:
+        success: 
+          type: boolean
+          example: true
+        data: 
+          type: string
+        token: 
+          type: string
+        expiry: 
+          type: integer
+    LoginFaild:
+      type: object
+      properties:
+        success: 
+          type: boolean
+          example: false
+        data: 
+          type: string
+    AttendanceLogCreate:
+      type: object
+      required:
+        - user_id
+        - session_token_id
+        - attendance_date
+        - attendance_status
+        - attendance_status_date
+        - status
+        - created_by
+        - last_modified_by
+        - deleted_by
+      properties:
+        user_id:
+          type: integer
+          example: 1
+        session_token_id:
+          type: integer
+          example: 1
+        attendance_date:
+          type: string
+          example: '2022-01-01'
+        attendance_status:
+          type: string
+          enum:
+            - I
+            - O
+          description: Attendance Status I = CheckIn <br/> O = CheckOut
+        attendance_status_date:
+          type: string
+          example: '2022-01-01 13:00:00'
+        status:
+          type: string
+          enum:
+            - A
+            - I
+          description: Status A = Active <br/> I = Inactive
+        created_by:
+          type: integer
+          example: 1
+        last_modified_by:
+          type: integer
+          example: 1
+        deleted_by:
+          type: integer
+          example: NULL
+        created_at:
+          type: string
+        updated_at:
+          type: string
+        deleted_at:
+          type: string
+    AttendanceResponse:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 1
+            user_id: 
+              type: integer
+              example: 1
+            attendance_date:
+              type: string
+              example: "2022-01-01"
+            last_attendance_status:
+              type: string
+              enum:
+              - I
+              - O
+              description: Last Status I = CheckIn <br/> O = CheckOut
+            last_attendance_id:
+              type: integer
+              example: 1
+            hours:
+              type: integer
+              example: 6
+            status:
+              type: string
+              enum:
+              - A
+              - I
+              description: Status A = Active <br/> I= Inactive
+            created_by:
+              type: integer
+              example: 1
+            last_modified_by:
+              type: integer
+              example: 1
+            deleted_by:
+              type: integer
+              example: NULL
+            created_at:
+              type: string
+              example: "2022-02-17T12:37:02.000000Z"
+            updated_at:
+              type: string
+              example: "2022-02-18T09:32:58.000000Z"
+            deleted_at:
+              type: string
+              example: NULL
+    AttendanceCreateSuccess:
+      type: object
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          $ref: '#/components/schemas/AttendanceResponse'
+    LastAttendance:
+      type: object
+      properties:
+        success: 
+          type: boolean
+        data:
+          $ref: '#/components/schemas/AttendanceResponse'
+    ActivityLogCreate:
+      type: object
+      required:
+        - user_id
+        - session_token_id
+        - activity_date
+        - log_from_date
+        - log_to_date
+        - note
+        - keyboard_track
+        - mouse_track
+        - time_type
+        - screen_shots
+        - created_by
+        - last_modified_by
+        - deleted_by
+      properties:
+        user_id:
+          type: integer
+          example: 1
+        session_token_id:
+          type: integer
+          example: 1
+        activity_date:
+          type: string
+          example: '2022-01-01'
+        log_from_date:
+          type: string
+          example: '2022-01-01 10:00:00'
+        log_to_date:
+          type: string
+          example: '2022-01-01 18:00:00'
+        note:
+          type: string
+        keyboard_track:
+          type: integer
+          example: 400
+        mouse_track:
+          type: integer
+          example: 1900
+        time_type:
+          type: string
+          enum:
+            - I
+            - N
+            - CI
+            - CO
+          description: Time Type I = Idle <br/> N = Normal <br/> CI = CheckIn <br/> CO - CheckOut
+        screen_shots:
+          type: string
+        created_by:
+          type: integer
+          example: 1
+        last_modified_by:
+          type: integer
+          example: 1
+        deleted_by:
+          type: integer
+          example: NULL
+        created_at:
+          type: string
+        updated_at:
+          type: string
+        deleted_at:
+          type: string
+    HubstaffConfigCreate:
+      type: object
+      required:
+        - screenshot_frequency
+        - idle_timeout
+      properties:
+        screenshot_frequency:
+          type: integer
+          example: 3
+        idle_timeout:
+          type: integer
+          example: 10
+        created_by:
+          type: integer
+          example: 1
+        last_modified_by:
+          type: integer
+          example: 1
+        deleted_by:
+          type: integer
+          example: NULL
+        created_at:
+          type: string
+        updated_at:
+          type: string
+        deleted_at:
+          type: string
+    HubstaffConfigUpdate:
+      type: object
+      required:
+        - screenshot_frequency
+        - idle_timeout
+      properties:
+        screenshot_frequency:
+          type: integer
+          example: 3
+        idle_timeout:
+          type: integer
+          example: 10
+    ConfigCreateSuccess:
+      type: object
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          $ref: '#/components/schemas/ConfigResponse'
+    ConfigResponse:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 1
+            screenshot_frequency:
+              type: integer
+              example: 10
+            idle_timeout: 
+              type: integer
+              example: 1
+            created_by:
+              type: integer
+              example: 1
+            last_modified_by:
+              type: integer
+              example: 1
+            deleted_by:
+              type: integer
+              example: NULL
+            created_at:
+              type: string
+              example: "2022-02-17T12:37:02.000000Z"
+            updated_at:
+              type: string
+              example: "2022-02-18T09:32:58.000000Z"
+            deleted_at:
+              type: string
+              example: NULL
+    ConfigsResponse:
+      type: object
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          $ref: '#/components/schemas/ConfigArray'
+    ConfigArray:
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: integer
+            example: 1
+          screenshot_frequency:
+            type: integer
+            example: 3
+          idle_timeout:
+            type: integer
+            example: 2
+          created_by:
+            type: integer
+            example: 1
+          last_modified_by:
+            type: integer
+            example: 1
+          deleted_by:
+            type: integer
+            example: NULL
+          created_at:
+            type: string
+          updated_at:
+            type: string
+          deleted_at:
+            type: string
+    activity_logs:
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: integer
+            example: 1
+          user_id:
+            type: integer
+            example: 1
+          session_token_id:
+            type: integer
+            example: 1
+          activity_date:
+            type: string
+          log_from_date:
+            type: string
+          log_to_date:
+            type: string
+          note:
+            type: string
+          keyboard_track:
+            type: integer
+          mouse_track:
+            type: integer
+          time_type:
+            type: string
+            enum:
+              - CI
+              - N
+              - I
+              - CO
+            description: CI = CheckIn <br/> N = Normal <br/> I = Idle <br/> CO = CheckOut
+          created_by:
+            type: integer
+            example: 1
+          last_modified_by:
+            type: integer
+            example: 1
+          deleted_by:
+            type: integer
+            example: NULL
+          created_at:
+            type: string
+          updated_at:
+            type: string
+          deleted_at:
+            type: string
+          screenshots:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type: integer
+                user_id:
+                  type: integer
+                session_token_id:
+                  type: integer
+                activity_log_id:
+                  type: integer
+                image_path:
+                  type: string
+                created_by:
+                  type: integer
+                last_modified_by:
+                  type: integer
+                deleted_by:
+                  type: integer
+                created_at:
+                  type: string
+                updated_at:
+                  type: string
+                deleted_at:
+                  type: string
+          start_time:
+            type: string
+          end_time:
+            type: string
+    ActivityLogsResponse:
+      type: object
+      required:
+        - success
+        - activity_logs
+        - work_hours
+      properties:
+        success:
+          type: boolean
+          example: true
+        activity_logs:
+          $ref: '#/components/schemas/activity_logs'
+        work_hours:
+          type: array
+          items:
+            type: string
+            example: '9:00 - 10:00'
+    Timestamps:
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: integer
+          example: 1647241450
+    refreshTokenSuccess:
+      type: object
+      properties:
+        success: 
+          type: boolean
+          example: true
+        data: 
+          type: string
+        token: 
+          type: string
+        expiry: 
+          type: integer
+    invalidToken:
+      type: object
+      properties:
+        success: 
+          type: boolean
+          example: true
+        message: 
+          type: string
+    
+
+          
+        
+          
+  
